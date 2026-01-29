@@ -201,6 +201,75 @@
             border-bottom-left-radius: 4px;
         }
 
+        /* Markdown styles */
+        .message-bubble p {
+            margin: 0 0 10px 0;
+        }
+        .message-bubble p:last-child {
+            margin-bottom: 0;
+        }
+        .message-bubble h1, .message-bubble h2, .message-bubble h3, .message-bubble h4 {
+            margin: 16px 0 8px 0;
+            font-weight: 600;
+        }
+        .message-bubble h1:first-child, .message-bubble h2:first-child,
+        .message-bubble h3:first-child, .message-bubble h4:first-child {
+            margin-top: 0;
+        }
+        .message-bubble h1 { font-size: 1.4em; }
+        .message-bubble h2 { font-size: 1.2em; }
+        .message-bubble h3 { font-size: 1.1em; }
+        .message-bubble ul, .message-bubble ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+        .message-bubble li {
+            margin: 4px 0;
+        }
+        .message-bubble code {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .message-bubble pre {
+            background: rgba(0,0,0,0.1);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+        .message-bubble pre code {
+            background: none;
+            padding: 0;
+        }
+        .message-bubble blockquote {
+            border-left: 3px solid rgba(0,0,0,0.2);
+            padding-left: 12px;
+            margin: 8px 0;
+            font-style: italic;
+        }
+        .message-bubble a {
+            color: inherit;
+            text-decoration: underline;
+        }
+        .message-bubble strong {
+            font-weight: 600;
+        }
+        .message-bubble em {
+            font-style: italic;
+        }
+        .message.user .message-bubble code {
+            background: rgba(255,255,255,0.2);
+        }
+        .message.user .message-bubble pre {
+            background: rgba(255,255,255,0.15);
+        }
+        .message.user .message-bubble blockquote {
+            border-left-color: rgba(255,255,255,0.4);
+        }
+
         .no-selection {
             display: flex;
             align-items: center;
@@ -368,7 +437,7 @@
             </div>
 
             <div class="metadata-panel">
-                <div class="metadata-header">Details</div>
+                <div class="metadata-header">Interesting Details</div>
                 <div class="metadata-content" id="metadataContent">
                     <div class="no-metadata">
                         Select a conversation to view details
@@ -550,6 +619,65 @@
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function renderMarkdown(text) {
+            if (!text) return '';
+
+            // Escape HTML first
+            let html = escapeHtml(text);
+
+            // Code blocks (must be before other processing)
+            html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+
+            // Inline code
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // Headers
+            html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+            html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+            // Bold and italic
+            html = html.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+            // Links
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+            // Blockquotes
+            html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+
+            // Unordered lists
+            html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+
+            // Ordered lists
+            html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+            // Paragraphs - split by double newlines
+            html = html.split(/\n\n+/).map(para => {
+                para = para.trim();
+                if (!para) return '';
+                // Don't wrap if already a block element
+                if (para.startsWith('<h') || para.startsWith('<ul') ||
+                    para.startsWith('<ol') || para.startsWith('<pre') ||
+                    para.startsWith('<blockquote')) {
+                    return para;
+                }
+                // Convert single newlines to <br> within paragraphs
+                return '<p>' + para.replace(/\n/g, '<br>') + '</p>';
+            }).join('\n');
+
+            return html;
+        }
+
         function applyFilters() {
             let filtered = conversations;
 
@@ -602,11 +730,16 @@
             header.textContent = `Conversation - ${formatDate(conversation.timestamp)}`;
 
             const container = document.getElementById('messagesContainer');
-            container.innerHTML = conversation.messages.map(msg => `
+            container.innerHTML = conversation.messages.map(msg => {
+                let content = renderMarkdown(msg.content);
+                if (currentSearch) {
+                    content = highlightText(content, currentSearch);
+                }
+                return `
                 <div class="message ${msg.role}">
-                    <div class="message-bubble">${highlightText(msg.content, currentSearch)}</div>
+                    <div class="message-bubble">${content}</div>
                 </div>
-            `).join('');
+            `}).join('');
 
             container.scrollTop = 0;
 
