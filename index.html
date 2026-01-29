@@ -648,12 +648,20 @@
             // Blockquotes
             html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
 
-            // Unordered lists
-            html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
-            html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+            // Unordered lists - handle •, -, * bullets
+            html = html.replace(/^[•\-\*]\s+(.+)$/gm, ':::li:::$1:::endli:::');
+            // Wrap consecutive list items in ul
+            html = html.replace(/(:::li:::[\s\S]*?:::endli:::\n?)+/g, function(match) {
+                const items = match.replace(/:::li:::/g, '<li>').replace(/:::endli:::/g, '</li>');
+                return '<ul>' + items + '</ul>';
+            });
 
             // Ordered lists
-            html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/^\d+\.\s+(.+)$/gm, ':::oli:::$1:::endoli:::');
+            html = html.replace(/(:::oli:::[\s\S]*?:::endoli:::\n?)+/g, function(match) {
+                const items = match.replace(/:::oli:::/g, '<li>').replace(/:::endoli:::/g, '</li>');
+                return '<ol>' + items + '</ol>';
+            });
 
             // Paragraphs - split by double newlines
             html = html.split(/\n\n+/).map(para => {
