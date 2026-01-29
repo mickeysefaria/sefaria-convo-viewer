@@ -500,8 +500,8 @@
             let userId = null;
 
             items.forEach(item => {
-                // Extract user query
-                const query = item.input?.query || '';
+                // Extract user query (support both 'query' and 'message' fields)
+                const query = item.input?.query || item.input?.message || '';
                 if (query) {
                     // Clean up the user message (remove the URL context suffix if present)
                     let content = query;
