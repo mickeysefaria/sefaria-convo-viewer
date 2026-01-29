@@ -183,6 +183,12 @@
             align-items: flex-start;
         }
 
+        .message-caption {
+            font-size: 10px;
+            color: #95a5a6;
+            margin-top: 2px;
+        }
+
         .message-bubble {
             max-width: 85%;
             padding: 8px 12px;
@@ -953,9 +959,13 @@
                 if (currentSearch) {
                     content = highlightText(content, currentSearch);
                 }
+                const wordCount = (msg.content || '').trim().split(/\s+/).filter(w => w).length;
+                const charCount = (msg.content || '').length;
+                const caption = msg.role === 'assistant' ? `<div class="message-caption">${wordCount}/${charCount}</div>` : '';
                 return `
                 <div class="message ${msg.role}" style="margin-bottom: ${currentMargin}px">
                     <div class="message-bubble" style="line-height: ${currentLineHeight}; padding: ${currentPadding}px ${currentPadding + 4}px">${content}</div>
+                    ${caption}
                 </div>
             `}).join('');
 
