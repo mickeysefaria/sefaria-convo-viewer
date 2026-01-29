@@ -877,8 +877,13 @@
             html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
             html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 
-            // Links
+            // Links - standard markdown
             html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+            // Links - Slack-style <url|text> format
+            html = html.replace(/<(https?:\/\/[^|>]+)\|([^>]+)>/g, '<a href="$1" target="_blank">$2</a>');
+            // Links - Slack-style <url> format (no text)
+            html = html.replace(/<(https?:\/\/[^>]+)>/g, '<a href="$1" target="_blank">$1</a>');
 
             // Blockquotes
             html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
