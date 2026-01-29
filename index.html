@@ -194,37 +194,110 @@
             font-size: 12px;
         }
 
-        .font-controls {
+        .gear-button {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 4px;
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-left: auto;
-            font-size: 0.8rem;
-            font-weight: normal;
+            justify-content: center;
+            opacity: 0.7;
+            transition: opacity 0.2s;
         }
 
-        .font-controls button {
-            width: 24px;
-            height: 24px;
+        .gear-button:hover {
+            opacity: 1;
+        }
+
+        .gear-button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .config-panel {
+            display: none;
+        }
+
+        .config-panel.visible {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-header {
+            background: #34495e;
+            color: white;
+            padding: 12px 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .config-close {
+            margin-left: auto;
+            background: none;
             border: none;
-            background: #4a5c6e;
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0 4px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .config-close:hover {
+            opacity: 1;
+        }
+
+        .config-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .config-item {
+            margin-bottom: 20px;
+        }
+
+        .config-label {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .config-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .config-control button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #3498db;
             color: white;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
-            line-height: 1;
+            font-size: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .font-controls button:hover {
-            background: #5a6c7e;
+        .config-control button:hover {
+            background: #2980b9;
         }
 
-        .font-size-display {
-            min-width: 36px;
+        .config-value {
+            min-width: 60px;
             text-align: center;
+            font-size: 0.95rem;
+            font-weight: 500;
         }
 
         .message.user .message-bubble {
@@ -465,12 +538,13 @@
 
             <div class="conversation-detail">
                 <div class="detail-header" id="detailHeader">
-                    <span>Conversation Details</span>
-                    <div class="font-controls">
-                        <button onclick="adjustFontSize(-1)">−</button>
-                        <span class="font-size-display" id="fontSizeDisplay">12px</span>
-                        <button onclick="adjustFontSize(1)">+</button>
-                    </div>
+                    <span>Convo</span>
+                    <button class="gear-button" onclick="toggleConfig()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                    </button>
                 </div>
                 <div class="messages-container" id="messagesContainer">
                     <div class="no-selection">
@@ -479,11 +553,52 @@
                 </div>
             </div>
 
-            <div class="metadata-panel">
+            <div class="metadata-panel" id="metadataPanel">
                 <div class="metadata-header">Interesting Details ??</div>
                 <div class="metadata-content" id="metadataContent">
                     <div class="no-metadata">
                         Select a conversation to view details
+                    </div>
+                </div>
+            </div>
+
+            <div class="metadata-panel config-panel" id="configPanel">
+                <div class="config-header">
+                    <span>Display Settings</span>
+                    <button class="config-close" onclick="toggleConfig()">×</button>
+                </div>
+                <div class="config-content">
+                    <div class="config-item">
+                        <div class="config-label">Font Size</div>
+                        <div class="config-control">
+                            <button onclick="adjustFontSize(-1)">−</button>
+                            <span class="config-value" id="fontSizeDisplay">12px</span>
+                            <button onclick="adjustFontSize(1)">+</button>
+                        </div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Line Height</div>
+                        <div class="config-control">
+                            <button onclick="adjustLineHeight(-0.1)">−</button>
+                            <span class="config-value" id="lineHeightDisplay">1.4</span>
+                            <button onclick="adjustLineHeight(0.1)">+</button>
+                        </div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Bubble Margin</div>
+                        <div class="config-control">
+                            <button onclick="adjustMargin(-1)">−</button>
+                            <span class="config-value" id="marginDisplay">10px</span>
+                            <button onclick="adjustMargin(1)">+</button>
+                        </div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Bubble Padding</div>
+                        <div class="config-control">
+                            <button onclick="adjustPadding(-1)">−</button>
+                            <span class="config-value" id="paddingDisplay">8px</span>
+                            <button onclick="adjustPadding(1)">+</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -494,11 +609,45 @@
         let conversations = [];
         let currentSearch = '';
         let currentFontSize = 12;
+        let currentLineHeight = 1.4;
+        let currentMargin = 10;
+        let currentPadding = 8;
+        let configOpen = false;
+
+        function toggleConfig() {
+            configOpen = !configOpen;
+            document.getElementById('metadataPanel').style.display = configOpen ? 'none' : '';
+            document.getElementById('configPanel').classList.toggle('visible', configOpen);
+        }
 
         function adjustFontSize(delta) {
             currentFontSize = Math.max(8, Math.min(24, currentFontSize + delta));
             document.getElementById('messagesContainer').style.fontSize = currentFontSize + 'px';
             document.getElementById('fontSizeDisplay').textContent = currentFontSize + 'px';
+        }
+
+        function adjustLineHeight(delta) {
+            currentLineHeight = Math.max(1, Math.min(3, Math.round((currentLineHeight + delta) * 10) / 10));
+            document.querySelectorAll('.message-bubble').forEach(el => {
+                el.style.lineHeight = currentLineHeight;
+            });
+            document.getElementById('lineHeightDisplay').textContent = currentLineHeight.toFixed(1);
+        }
+
+        function adjustMargin(delta) {
+            currentMargin = Math.max(0, Math.min(40, currentMargin + delta));
+            document.querySelectorAll('.message').forEach(el => {
+                el.style.marginBottom = currentMargin + 'px';
+            });
+            document.getElementById('marginDisplay').textContent = currentMargin + 'px';
+        }
+
+        function adjustPadding(delta) {
+            currentPadding = Math.max(0, Math.min(30, currentPadding + delta));
+            document.querySelectorAll('.message-bubble').forEach(el => {
+                el.style.padding = currentPadding + 'px ' + (currentPadding + 4) + 'px';
+            });
+            document.getElementById('paddingDisplay').textContent = currentPadding + 'px';
         }
 
         async function loadConversations() {
@@ -778,9 +927,6 @@
             const conversation = conversations.find(c => c.id === id);
             if (!conversation) return;
 
-            const header = document.getElementById('detailHeader');
-            header.querySelector('span').textContent = `Conversation - ${formatDate(conversation.timestamp)}`;
-
             const container = document.getElementById('messagesContainer');
             container.innerHTML = conversation.messages.map(msg => {
                 let content = renderMarkdown(msg.content);
@@ -788,8 +934,8 @@
                     content = highlightText(content, currentSearch);
                 }
                 return `
-                <div class="message ${msg.role}">
-                    <div class="message-bubble">${content}</div>
+                <div class="message ${msg.role}" style="margin-bottom: ${currentMargin}px">
+                    <div class="message-bubble" style="line-height: ${currentLineHeight}; padding: ${currentPadding}px ${currentPadding + 4}px">${content}</div>
                 </div>
             `}).join('');
 
