@@ -779,7 +779,7 @@
             if (!conversation) return;
 
             const header = document.getElementById('detailHeader');
-            header.textContent = `Conversation - ${formatDate(conversation.timestamp)}`;
+            header.querySelector('span').textContent = `Conversation - ${formatDate(conversation.timestamp)}`;
 
             const container = document.getElementById('messagesContainer');
             container.innerHTML = conversation.messages.map(msg => {
