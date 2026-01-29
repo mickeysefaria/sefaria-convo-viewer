@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sefaria Agent Conversations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .header-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-right: auto;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-box input {
+            width: 250px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .search-box button {
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .search-box button:hover {
+            background: #2980b9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr 220px;
+            gap: 20px;
+            height: calc(100vh - 120px);
+        }
+
+        .conversation-list {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list-header {
+            background: #34495e;
+            color: white;
+            padding: 12px 20px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .conversation-items {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .conversation-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .conversation-item:hover {
+            background: #f8f9fa;
+        }
+
+        .conversation-item.active {
+            background: #e3f2fd;
+            border-left: 4px solid #3498db;
+        }
+
+        .conversation-item .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
+        }
+
+        .conversation-item .timestamp {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .conversation-item .preview {
+            font-size: 0.85rem;
+            color: #555;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conversation-item .message-count {
+            font-size: 0.7rem;
+            color: #95a5a6;
+            margin-top: 3px;
+        }
+
+        .conversation-detail {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .detail-header {
+            background: #34495e;
+            color: white;
+            padding: 12px 20px;
+            font-weight: 600;
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.assistant {
+            align-items: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .message.user .message-bubble {
+            background: #3498db;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-bubble {
+            background: #ecf0f1;
+            color: #2c3e50;
+            border-bottom-left-radius: 4px;
+        }
+
+        .no-selection {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #95a5a6;
+            font-size: 1.1rem;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 1px 3px;
+            border-radius: 3px;
+        }
+
+        .search-info {
+            padding: 8px 20px;
+            background: #fff3cd;
+            font-size: 0.8rem;
+            color: #856404;
+            display: none;
+        }
+
+        .search-info.visible {
+            display: block;
+        }
+
+        .clear-search {
+            background: none;
+            border: none;
+            color: #856404;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.8rem;
+        }
+
+        /* Metadata Panel */
+        .metadata-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .metadata-header {
+            background: #34495e;
+            color: white;
+            padding: 12px 20px;
+            font-weight: 600;
+        }
+
+        .metadata-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .metadata-item {
+            margin-bottom: 16px;
+        }
+
+        .metadata-label {
+            font-size: 0.75rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .metadata-value {
+            font-size: 0.95rem;
+            color: #2c3e50;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .metadata-value.small {
+            font-size: 0.8rem;
+            font-weight: 400;
+        }
+
+        .no-metadata {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #95a5a6;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 1100px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .conversation-list {
+                max-height: 300px;
+            }
+
+            .conversation-detail {
+                height: 400px;
+            }
+
+            .metadata-panel {
+                height: 200px;
+            }
+
+            .header-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            header h1 {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+
+            .search-box input {
+                flex: 1;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-row">
+                <h1>Sefaria Agent Conversations</h1>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search conversations...">
+                    <button onclick="performSearch()">Search</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="conversation-list">
+                <div class="list-header">
+                    <span>Conversations</span>
+                    <span id="conversationCount">0</span>
+                </div>
+                <div class="search-info" id="searchInfo">
+                    "<span id="searchTerm"></span>"
+                    <button class="clear-search" onclick="clearSearch()">Clear</button>
+                </div>
+                <div class="conversation-items" id="conversationItems">
+                </div>
+            </div>
+
+            <div class="conversation-detail">
+                <div class="detail-header" id="detailHeader">
+                    Conversation Details
+                </div>
+                <div class="messages-container" id="messagesContainer">
+                    <div class="no-selection">
+                        Select a conversation to view
+                    </div>
+                </div>
+            </div>
+
+            <div class="metadata-panel">
+                <div class="metadata-header">Details</div>
+                <div class="metadata-content" id="metadataContent">
+                    <div class="no-metadata">
+                        Select a conversation to view details
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let conversations = [];
+        let currentSearch = '';
+
+        async function loadConversations() {
+            try {
+                const response = await fetch('on_site_agent.json');
+                const rawData = await response.json();
+
+                // Group records by session_id to form multi-turn conversations
+                const sessionMap = new Map();
+
+                rawData.forEach(item => {
+                    const sessionId = item.input?.session_id || item.root_span_id || `single-${Date.now()}-${Math.random()}`;
+
+                    if (!sessionMap.has(sessionId)) {
+                        sessionMap.set(sessionId, []);
+                    }
+                    sessionMap.get(sessionId).push(item);
+                });
+
+                // Transform grouped sessions into conversations
+                conversations = Array.from(sessionMap.entries())
+                    .map(([sessionId, items]) => transformSession(sessionId, items))
+                    .filter(c => c.messages.length > 0)
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                applyFilters();
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+                document.getElementById('conversationItems').innerHTML =
+                    '<div style="padding: 20px; text-align: center; color: #e74c3c;">Error loading data. Check console for details.</div>';
+            }
+        }
+
+        function transformSession(sessionId, items) {
+            // Sort items by timestamp to get correct order
+            items.sort((a, b) => new Date(a.created) - new Date(b.created));
+
+            const messages = [];
+            let totalDuration = 0;
+            let totalCost = 0;
+            let totalLlmCalls = 0;
+            let totalToolCalls = 0;
+            let totalTokens = 0;
+            let promptTokens = 0;
+            let completionTokens = 0;
+            let topic = null;
+            let flow = null;
+            let tags = new Set();
+            let userId = null;
+
+            items.forEach(item => {
+                // Extract user query
+                const query = item.input?.query || '';
+                if (query) {
+                    // Clean up the user message (remove the URL context suffix if present)
+                    let content = query;
+                    const urlSuffix = content.indexOf('\n\nUser is currently on the Sefaria url:');
+                    if (urlSuffix > 0) {
+                        content = content.substring(0, urlSuffix);
+                    }
+                    if (content.trim()) {
+                        messages.push({ role: 'user', content: content.trim() });
+                    }
+                }
+
+                // Extract assistant response
+                if (item.output) {
+                    const response = item.output.content || item.output.response || '';
+                    if (response.trim()) {
+                        messages.push({ role: 'assistant', content: response.trim() });
+                    }
+                }
+
+                // Aggregate metrics
+                const metrics = item.metrics || {};
+                totalDuration += metrics.duration || 0;
+                totalCost += metrics.estimated_cost || 0;
+                totalLlmCalls += metrics.llm_calls || 0;
+                totalToolCalls += metrics.tool_calls || 0;
+                totalTokens += metrics.total_tokens || 0;
+                promptTokens += metrics.prompt_tokens || 0;
+                completionTokens += metrics.completion_tokens || 0;
+
+                // Get metadata from latest item
+                const meta = item.metadata || {};
+                if (meta.conversation_summary_structured?.current_topic) {
+                    topic = meta.conversation_summary_structured.current_topic;
+                }
+                if (item.input?.route_result?.flow || meta.conversation_summary_structured?.flow) {
+                    flow = item.input?.route_result?.flow || meta.conversation_summary_structured?.flow;
+                }
+                if (item.tags) {
+                    item.tags.forEach(t => tags.add(t));
+                }
+                if (item.input?.user_id) {
+                    userId = item.input.user_id;
+                }
+            });
+
+            // Use first item's timestamp as conversation start
+            const firstItem = items[0];
+
+            return {
+                id: sessionId,
+                timestamp: firstItem.created,
+                userId: userId || sessionId,
+                sessionId: sessionId,
+                messages: messages,
+                turnCount: items.length,
+                metadata: {
+                    duration: totalDuration ? `${totalDuration.toFixed(2)}s` : null,
+                    cost: totalCost ? `$${totalCost.toFixed(4)}` : null,
+                    llmCalls: totalLlmCalls,
+                    toolCalls: totalToolCalls,
+                    totalTokens: totalTokens,
+                    promptTokens: promptTokens,
+                    completionTokens: completionTokens,
+                    flow: flow,
+                    topic: topic,
+                    tags: Array.from(tags)
+                }
+            };
+        }
+
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+            if (days === 0) {
+                return 'Today ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else if (days === 1) {
+                return 'Yesterday ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else if (days < 7) {
+                return date.toLocaleDateString([], { weekday: 'long' }) + ' ' +
+                       date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else {
+                return date.toLocaleDateString([], {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        }
+
+        function getPreview(conversation) {
+            // Get first user message as preview
+            const userMsg = conversation.messages.find(m => m.role === 'user');
+            if (userMsg) {
+                return userMsg.content;
+            }
+            if (conversation.messages.length > 0) {
+                return conversation.messages[0].content;
+            }
+            return 'No messages';
+        }
+
+        function highlightText(text, searchTerm) {
+            if (!searchTerm || !text) return text || '';
+            const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function applyFilters() {
+            let filtered = conversations;
+
+            if (currentSearch) {
+                filtered = filtered.filter(conv =>
+                    (conv.userId && conv.userId.toLowerCase().includes(currentSearch)) ||
+                    (conv.sessionId && conv.sessionId.toLowerCase().includes(currentSearch)) ||
+                    (conv.metadata.topic && conv.metadata.topic.toLowerCase().includes(currentSearch)) ||
+                    (conv.messages && conv.messages.some(msg =>
+                        msg.content && msg.content.toLowerCase().includes(currentSearch)
+                    ))
+                );
+            }
+
+            renderConversationList(filtered);
+        }
+
+        function renderConversationList(convos) {
+            const container = document.getElementById('conversationItems');
+            const countEl = document.getElementById('conversationCount');
+
+            countEl.textContent = convos.length;
+
+            if (convos.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #95a5a6;">No conversations found</div>';
+                return;
+            }
+
+            container.innerHTML = convos.map(conv => `
+                <div class="conversation-item" data-id="${conv.id}" onclick="selectConversation('${conv.id}')">
+                    <div class="item-header">
+                        <div class="timestamp">${formatDate(conv.timestamp)}</div>
+                    </div>
+                    <div class="preview">${highlightText(getPreview(conv), currentSearch)}</div>
+                    <div class="message-count">${conv.turnCount} turn${conv.turnCount !== 1 ? 's' : ''}${conv.metadata.topic ? ' • ' + conv.metadata.topic : ''}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectConversation(id) {
+            document.querySelectorAll('.conversation-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelector(`[data-id="${id}"]`)?.classList.add('active');
+
+            const conversation = conversations.find(c => c.id === id);
+            if (!conversation) return;
+
+            const header = document.getElementById('detailHeader');
+            header.textContent = `Conversation - ${formatDate(conversation.timestamp)}`;
+
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = conversation.messages.map(msg => `
+                <div class="message ${msg.role}">
+                    <div class="message-bubble">${highlightText(msg.content, currentSearch)}</div>
+                </div>
+            `).join('');
+
+            container.scrollTop = 0;
+
+            // Update metadata panel
+            const metadataContainer = document.getElementById('metadataContent');
+            const meta = conversation.metadata;
+
+            let tagsHtml = '';
+            if (meta.tags && meta.tags.length > 0) {
+                tagsHtml = `
+                    <div class="metadata-item">
+                        <div class="metadata-label">Tags</div>
+                        <div class="metadata-value small">${meta.tags.join(', ')}</div>
+                    </div>
+                `;
+            }
+
+            metadataContainer.innerHTML = `
+                <div class="metadata-item">
+                    <div class="metadata-label">User ID</div>
+                    <div class="metadata-value small">${conversation.userId}</div>
+                </div>
+                ${conversation.sessionId ? `
+                <div class="metadata-item">
+                    <div class="metadata-label">Session ID</div>
+                    <div class="metadata-value small">${conversation.sessionId}</div>
+                </div>
+                ` : ''}
+                ${meta.topic ? `
+                <div class="metadata-item">
+                    <div class="metadata-label">Topic</div>
+                    <div class="metadata-value">${meta.topic}</div>
+                </div>
+                ` : ''}
+                ${meta.flow ? `
+                <div class="metadata-item">
+                    <div class="metadata-label">Flow</div>
+                    <div class="metadata-value">${meta.flow}</div>
+                </div>
+                ` : ''}
+                <div class="metadata-item">
+                    <div class="metadata-label">Duration</div>
+                    <div class="metadata-value">${meta.duration || 'N/A'}</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">Cost</div>
+                    <div class="metadata-value">${meta.cost || 'N/A'}</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">LLM Calls</div>
+                    <div class="metadata-value">${meta.llmCalls}</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">Tool Calls</div>
+                    <div class="metadata-value">${meta.toolCalls}</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">Tokens</div>
+                    <div class="metadata-value small">${meta.totalTokens.toLocaleString()} total<br>${meta.promptTokens.toLocaleString()} prompt<br>${meta.completionTokens.toLocaleString()} completion</div>
+                </div>
+                ${tagsHtml}
+            `;
+        }
+
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+            currentSearch = searchTerm;
+
+            const searchInfo = document.getElementById('searchInfo');
+            const searchTermEl = document.getElementById('searchTerm');
+
+            if (!searchTerm) {
+                clearSearch();
+                return;
+            }
+
+            searchInfo.classList.add('visible');
+            searchTermEl.textContent = searchTerm;
+
+            applyFilters();
+
+            document.getElementById('messagesContainer').innerHTML = `
+                <div class="no-selection">
+                    Select a conversation to view
+                </div>
+            `;
+            document.getElementById('detailHeader').textContent = 'Conversation Details';
+            document.getElementById('metadataContent').innerHTML = `
+                <div class="no-metadata">
+                    Select a conversation to view details
+                </div>
+            `;
+        }
+
+        function clearSearch() {
+            currentSearch = '';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInfo').classList.remove('visible');
+            applyFilters();
+            document.getElementById('messagesContainer').innerHTML = `
+                <div class="no-selection">
+                    Select a conversation to view
+                </div>
+            `;
+            document.getElementById('detailHeader').textContent = 'Conversation Details';
+            document.getElementById('metadataContent').innerHTML = `
+                <div class="no-metadata">
+                    Select a conversation to view details
+                </div>
+            `;
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        loadConversations();
+    </script>
+</body>
+</html>
