@@ -159,6 +159,8 @@
             color: white;
             padding: 12px 20px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
         }
 
         .messages-container {
@@ -186,7 +188,43 @@
             padding: 8px 12px;
             border-radius: 12px;
             line-height: 1.4;
-            font-size: 0.9rem;
+        }
+
+        .messages-container {
+            font-size: 12px;
+        }
+
+        .font-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+            font-size: 0.8rem;
+            font-weight: normal;
+        }
+
+        .font-controls button {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: #4a5c6e;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .font-controls button:hover {
+            background: #5a6c7e;
+        }
+
+        .font-size-display {
+            min-width: 36px;
+            text-align: center;
         }
 
         .message.user .message-bubble {
@@ -427,7 +465,12 @@
 
             <div class="conversation-detail">
                 <div class="detail-header" id="detailHeader">
-                    Conversation Details
+                    <span>Conversation Details</span>
+                    <div class="font-controls">
+                        <button onclick="adjustFontSize(-1)">−</button>
+                        <span class="font-size-display" id="fontSizeDisplay">12px</span>
+                        <button onclick="adjustFontSize(1)">+</button>
+                    </div>
                 </div>
                 <div class="messages-container" id="messagesContainer">
                     <div class="no-selection">
@@ -450,6 +493,13 @@
     <script>
         let conversations = [];
         let currentSearch = '';
+        let currentFontSize = 12;
+
+        function adjustFontSize(delta) {
+            currentFontSize = Math.max(8, Math.min(24, currentFontSize + delta));
+            document.getElementById('messagesContainer').style.fontSize = currentFontSize + 'px';
+            document.getElementById('fontSizeDisplay').textContent = currentFontSize + 'px';
+        }
 
         async function loadConversations() {
             try {
