@@ -418,6 +418,11 @@
         }
 
         /* Metadata Panel */
+        .right-panel-wrapper {
+            position: relative;
+            height: 100%;
+        }
+
         .metadata-panel {
             background: white;
             border-radius: 8px;
@@ -425,6 +430,20 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            height: 100%;
+        }
+
+        .config-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+        }
+
+        .config-panel.visible {
+            display: flex;
         }
 
         .metadata-header {
@@ -553,51 +572,53 @@
                 </div>
             </div>
 
-            <div class="metadata-panel" id="metadataPanel">
-                <div class="metadata-header">Interesting Details ??</div>
-                <div class="metadata-content" id="metadataContent">
-                    <div class="no-metadata">
-                        Select a conversation to view details
+            <div class="right-panel-wrapper">
+                <div class="metadata-panel" id="metadataPanel">
+                    <div class="metadata-header">Interesting Details ??</div>
+                    <div class="metadata-content" id="metadataContent">
+                        <div class="no-metadata">
+                            Select a conversation to view details
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="metadata-panel config-panel" id="configPanel">
-                <div class="config-header">
-                    <span>Display Settings</span>
-                    <button class="config-close" onclick="toggleConfig()">×</button>
-                </div>
-                <div class="config-content">
-                    <div class="config-item">
-                        <div class="config-label">Font Size</div>
-                        <div class="config-control">
-                            <button onclick="adjustFontSize(-1)">−</button>
-                            <span class="config-value" id="fontSizeDisplay">12px</span>
-                            <button onclick="adjustFontSize(1)">+</button>
-                        </div>
+                <div class="metadata-panel config-panel" id="configPanel">
+                    <div class="config-header">
+                        <span>Display Settings</span>
+                        <button class="config-close" onclick="toggleConfig()">×</button>
                     </div>
-                    <div class="config-item">
-                        <div class="config-label">Line Height</div>
-                        <div class="config-control">
-                            <button onclick="adjustLineHeight(-0.1)">−</button>
-                            <span class="config-value" id="lineHeightDisplay">1.4</span>
-                            <button onclick="adjustLineHeight(0.1)">+</button>
+                    <div class="config-content">
+                        <div class="config-item">
+                            <div class="config-label">Font Size</div>
+                            <div class="config-control">
+                                <button onclick="adjustFontSize(-1)">−</button>
+                                <span class="config-value" id="fontSizeDisplay">12px</span>
+                                <button onclick="adjustFontSize(1)">+</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="config-item">
-                        <div class="config-label">Bubble Margin</div>
-                        <div class="config-control">
-                            <button onclick="adjustMargin(-1)">−</button>
-                            <span class="config-value" id="marginDisplay">10px</span>
-                            <button onclick="adjustMargin(1)">+</button>
+                        <div class="config-item">
+                            <div class="config-label">Line Height</div>
+                            <div class="config-control">
+                                <button onclick="adjustLineHeight(-0.1)">−</button>
+                                <span class="config-value" id="lineHeightDisplay">1.4</span>
+                                <button onclick="adjustLineHeight(0.1)">+</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="config-item">
-                        <div class="config-label">Bubble Padding</div>
-                        <div class="config-control">
-                            <button onclick="adjustPadding(-1)">−</button>
-                            <span class="config-value" id="paddingDisplay">8px</span>
-                            <button onclick="adjustPadding(1)">+</button>
+                        <div class="config-item">
+                            <div class="config-label">Bubble Margin</div>
+                            <div class="config-control">
+                                <button onclick="adjustMargin(-1)">−</button>
+                                <span class="config-value" id="marginDisplay">10px</span>
+                                <button onclick="adjustMargin(1)">+</button>
+                            </div>
+                        </div>
+                        <div class="config-item">
+                            <div class="config-label">Bubble Padding</div>
+                            <div class="config-control">
+                                <button onclick="adjustPadding(-1)">−</button>
+                                <span class="config-value" id="paddingDisplay">8px</span>
+                                <button onclick="adjustPadding(1)">+</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -616,7 +637,6 @@
 
         function toggleConfig() {
             configOpen = !configOpen;
-            document.getElementById('metadataPanel').style.display = configOpen ? 'none' : '';
             document.getElementById('configPanel').classList.toggle('visible', configOpen);
         }
 
